@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y \
     bzip2 \
     zip \
     libbz2-dev \
+    libmcrypt-dev \
     && docker-php-ext-configure mysqli \
-    && docker-php-ext-install mysqli pdo_mysql bz2
+    && docker-php-ext-install mysqli pdo_mysql bz2 mcrypt
 
 # Enable Apache Rewrite module
 RUN a2enmod rewrite
