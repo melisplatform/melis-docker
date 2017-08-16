@@ -1,4 +1,4 @@
-FROM php:5.6-apache
+FROM php:7.1-apache
 
 # Set default system timezone
 RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime

@@ -1,4 +1,4 @@
-FROM melisplatform/melis-docker:dev-apache-7.0
+FROM victorjacaban/melisdocker:dev-apache-7.1
 
 RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
     && curl -sS https://codeload.github.com/melisplatform/melis-cms-skeleton/zip/master -o melis-cms-skeleton.zip \
@@ -9,3 +9,5 @@ RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
     && composer update \
     && rm -r /usr/src/melisplatform
 
+#Change permission to 777
+RUN chmod -R 777 /var/www/html/test /var/www/html/config /var/www/html/public /var/www/html/cache /var/www/html/module

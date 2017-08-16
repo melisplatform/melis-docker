@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache Rewrite module
 RUN a2enmod rewrite
 
+#Install mysql server
+RUN apt-get update && \
+DEBIAN_FRONTEND=noninteractive apt-get -qq install mysql-server 
+
 # Default Vhost for developement
 COPY vhost.conf /etc/apache2/sites-available/000-default.conf
 
