@@ -1,8 +1,5 @@
 FROM melisplatform/melis-docker:dev-apache-7.0
 
-# php-apache 7.1 image
-#FROM victorjacaban/melisdocker:dev-apache-7.1
-
 RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
     && curl -sS https://codeload.github.com/melisplatform/melis-cms-skeleton/zip/master -o melis-cms-skeleton.zip \
     && unzip melis-cms-skeleton.zip \
