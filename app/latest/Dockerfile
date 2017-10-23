@@ -1,4 +1,4 @@
-FROM melisplatform/melis-docker:dev-apache-7.0
+FROM melisplatform/melis-docker:dev-apache-7.1
 
 RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
     && curl -sS https://codeload.github.com/melisplatform/melis-cms-skeleton/zip/master -o melis-cms-skeleton.zip \
