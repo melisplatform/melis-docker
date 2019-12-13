@@ -1,11 +1,11 @@
-version: '2'
+version: '3.2'
 services:
   melisdocker:
     build: .
-    container_name: melisdocker
+    container_name: ${MELIS_CONTAINER_NAME}
     restart: always
     ports:
-      - 8080:80
+      - ${MELIS_PLATFORM_PORT}:80
     volumes:
       - .:/var/app:rw
       - ./php-conf/php.ini:/usr/local/etc/php/php.ini
@@ -14,25 +14,30 @@ services:
     links:
       - db
     environment:
-      - MYSQL_ADDON_DB=melisv2
-      - MYSQL_ADDON_HOST=db
-      - MYSQL_ADDON_USER=root
-      - MYSQL_ADDON_PASSWORD=password
+        MYSQL_ADDON_DB: ${MYSQL_ADDON_DB}
+        MYSQL_ADDON_HOST: ${MYSQL_ADDON_HOST}
+        MYSQL_ADDON_USER: ${MYSQL_ADDON_USER}
+        MYSQL_ADDON_PASSWORD: ${MYSQL_ADDON_PASSWORD}
     networks:
       - front
       - back
   db:
-    image: mysql:latest
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
-    container_name: mysqlmelis
-    restart: always
+    image: mysql:${MYSQL_VERSION}
     ports:
-      - 3307:3307
+      - ${MYSQL_PMA}:3306
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    container_name: ${MYSQL_CONTAINER_NAME}
+    restart: always
     environment:
-       - MYSQL_ROOT_PASSWORD=password
-       - MYSQL_DATABASE=melisv2
+         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASS}
+         MYSQL_DATABASE: ${MYSQL_DB}
     networks:
       - back
+    volumes:
+      - melis_mysql_data:/var/lib/mysql  
 networks:
   front: 
   back:
+    internal: true
+volumes:
+  melis_mysql_data:
