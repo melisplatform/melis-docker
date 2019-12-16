@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libmcrypt-dev \
     libicu-dev \
     && docker-php-ext-configure mysqli \
-    && docker-php-ext-install mysqli pdo_mysql bz2 mcrypt intl
+    && docker-php-ext-install mysqli pdo_mysql bz2 mcrypt intl zip
 
 # Enable Apache Rewrite module
 RUN a2enmod rewrite

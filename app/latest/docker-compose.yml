@@ -38,6 +38,5 @@ services:
 networks:
   front: 
   back:
-    internal: true
 volumes:
   melis_mysql_data:
