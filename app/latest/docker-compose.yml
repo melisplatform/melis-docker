@@ -11,20 +11,16 @@ services:
       - ./php-conf/php.ini:/usr/local/etc/php/php.ini
     depends_on:
       - db
-    links:
-      - db
     environment:
         MYSQL_ADDON_DB: ${MYSQL_ADDON_DB}
         MYSQL_ADDON_HOST: ${MYSQL_ADDON_HOST}
         MYSQL_ADDON_USER: ${MYSQL_ADDON_USER}
-        MYSQL_ADDON_PASSWORD: ${MYSQL_ADDON_PASSWORD}
+        MYSQL_ADDON_PASSWORD: ${MYSQL_ROOT_PASS}
     networks:
       - front
       - back
   db:
     image: mysql:${MYSQL_VERSION}
-    ports:
-      - ${MYSQL_PMA}:3306
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
     container_name: ${MYSQL_CONTAINER_NAME}
     restart: always
