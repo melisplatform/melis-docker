@@ -29,8 +29,7 @@ RUN a2enmod rewrite \
 #Install mysql client
 RUN apt-get update && \
     apt-get -qq install mysql-client 
-# Default Vhost for developement
-COPY dev/php-apache-7.0/vhost.conf /etc/apache2/sites-available/000-default.conf
+
 
 #Install composer
 RUN curl -sS https://getcomposer.org/installer | php \

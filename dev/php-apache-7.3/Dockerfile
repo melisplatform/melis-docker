@@ -1,4 +1,4 @@
-#docker build -t dekra/dekra-docker:dev-apache-7.3 -f docker/php-apache-7.3/Dockerfile .
+#docker build -t melisplatform/melis-docker:dev-apache-7.3 -f dev/php-apache-7.3/Dockerfile .
 # build it from root project
 FROM php:7.3-apache
 
@@ -39,8 +39,6 @@ RUN apt-get update && \
     apt-get -y install default-mysql-client
 
 
-# Default Vhost for developement
-COPY vhost.conf /etc/apache2/sites-available/000-default.conf
 
 #Install composer
 RUN curl -sS https://getcomposer.org/installer | php \
