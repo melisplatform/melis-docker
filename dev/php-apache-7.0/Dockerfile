@@ -26,7 +26,9 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN a2enmod rewrite \
     && a2enmod headers
 
-
+#Install mysql client
+RUN apt-get update && \
+    apt-get -qq install mysql-client 
 # Default Vhost for developement
 COPY dev/php-apache-7.0/vhost.conf /etc/apache2/sites-available/000-default.conf
 
