@@ -28,7 +28,7 @@ RUN a2enmod rewrite \
 
 #Install mysql client
 RUN apt-get update && \
-    apt-get -qq install mysql-client 
+    apt-get -y install default-mysql-client
 
 
 #Install composer
