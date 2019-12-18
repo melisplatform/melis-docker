@@ -1,6 +1,10 @@
 # melis-docker
 Dockerized Melisplatfrom
 
+# clone project
+```bash
+git clone https://github.com/melisplatform/melis-docker.git
+```
 # build components :
 ## config
 Change php version in **app/latest/.env** default tag **dev-apache-7.3**
@@ -14,7 +18,7 @@ available tag: [here](https://hub.docker.com/repository/docker/melisplatform/mel
 ps: make sure that the port 8080 is not used in you host/or you can change it in the *.env* with any port
 
 ```bash
-docker-compose build --pull
+cd app/latest && docker-compose build --pull
 ```
 # start stack
 ```bash
