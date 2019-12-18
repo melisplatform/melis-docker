@@ -33,7 +33,8 @@ services:
     networks:
       - back
     volumes:
-      - melis_mysql_data:/var/lib/mysql  
+      - melis_mysql_data:/var/lib/mysql
+      - ./conf/my.cnf:/etc/mysql/my.cnf  
 networks:
   front: 
   back:
