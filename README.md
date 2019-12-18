@@ -14,7 +14,7 @@ available tag: [here](https://hub.docker.com/repository/docker/melisplatform/mel
 ps: make sure that the port 8080 is not used in you host/or you can change it in the *.env* with any port
 
 ```bash
-docker-compose up build --pull
+docker-compose build --pull
 ```
 # start stack
 ```bash
