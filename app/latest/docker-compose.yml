@@ -1,7 +1,10 @@
 version: '3.2'
 services:
   melisdocker:
-    build: .
+    build:
+       context: "."
+       args:
+          - tag=${tag}
     container_name: ${MELIS_CONTAINER_NAME}
     restart: always
     ports:

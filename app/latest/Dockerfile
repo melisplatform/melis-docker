@@ -1,6 +1,7 @@
 
 # Dockerfile Melis Platform
-FROM melisplatform/melis-docker:dev-apache-7.1
+ARG tag
+FROM melisplatform/melis-docker:${tag}
 
 # Installing Melis Platform Skeleton
 RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
