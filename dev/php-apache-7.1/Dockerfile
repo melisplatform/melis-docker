@@ -1,4 +1,5 @@
-#docker build -t melisplatform/melis-docker:dev-apache-7.1 -f dev/php-apache-7.1/Dockerfile .
+# docker build -t melisplatform/melis-docker:dev-apache-7.1 .
+
 # build it from root project
 FROM php:7.1-apache
 
@@ -30,8 +31,7 @@ RUN a2enmod rewrite \
 RUN apt-get update && \
     apt-get -y install default-mysql-client
 
-
-#Install composer
+# Install composer
 RUN curl -sS https://getcomposer.org/installer | php \
 	&& mv composer.phar /usr/bin/composer
 

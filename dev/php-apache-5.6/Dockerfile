@@ -1,4 +1,5 @@
-# docker build -t melisplatform/melis-docker:dev-apache-5.6 -f dev/php-apache-5.6/Dockerfile .
+# docker build -t melisplatform/melis-docker:dev-apache-5.6 .
+
 # build from root project
 FROM php:5.6-apache
 
@@ -23,13 +24,11 @@ RUN apt-get update && apt-get install -y \
 RUN a2enmod rewrite  \
     && a2enmod headers
 
-#Install mysql client
+# Install mysql client
 RUN apt-get update && \
     apt-get -y install mysql-client 
 
-
-
-#Install composer
+# Install composer
 RUN curl -sS https://getcomposer.org/installer | php \
 	&& mv composer.phar /usr/bin/composer
 

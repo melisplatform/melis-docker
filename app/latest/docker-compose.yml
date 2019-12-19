@@ -4,7 +4,7 @@ services:
     build:
        context: "."
        args:
-          - tag=${tag}
+          - tag=${TAG}
     container_name: ${MELIS_CONTAINER_NAME}
     restart: always
     ports:
@@ -15,10 +15,10 @@ services:
     depends_on:
       - db
     environment:
-        MYSQL_ADDON_DB: ${MYSQL_ADDON_DB}
-        MYSQL_ADDON_HOST: ${MYSQL_ADDON_HOST}
-        MYSQL_ADDON_USER: ${MYSQL_ADDON_USER}
-        MYSQL_ADDON_PASSWORD: ${MYSQL_ROOT_PASS}
+        MYSQL_ADDON_DB: ${MYSQL_DB}
+        MYSQL_ADDON_HOST: ${MYSQL_HOST}
+        MYSQL_ADDON_USER: ${MYSQL_USER}
+        MYSQL_ADDON_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - front
       - back
@@ -28,7 +28,7 @@ services:
     container_name: ${MYSQL_CONTAINER_NAME}
     restart: always
     environment:
-         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASS}
+         MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
          MYSQL_DATABASE: ${MYSQL_DB}
     networks:
       - back
