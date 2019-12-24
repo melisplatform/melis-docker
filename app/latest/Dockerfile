@@ -14,6 +14,5 @@ RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
     && rm -r /usr/src/melisplatform
 
 # Change permissions
-RUN echo "www-data ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-ADD ./setup /usr/local/bin/
-CMD ["setup"]
+RUN echo "www-data ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers &&\
+    chown -R www-data:www-data /var/www/html 
