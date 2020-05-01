@@ -79,22 +79,22 @@ spec:
         - name: MYSQL_ROOT_PASSWORD 
           valueFrom:                # Read environment variables from k8s secrets
             secretKeyRef:
-              name: mysql-root-pass
+              name: mysql-addon-db
               key: password
         - name: MYSQL_DATABASE
           valueFrom:
             secretKeyRef:
-              name: mysql-db-url
-              key: database
+              name: mysql-addon-db
+              key: db
         - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
-              name: mysql-user-pass
-              key: username
+              name: mysql-addon-db
+              key: user
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-user-pass
+              name: mysql-addon-db
               key: password
         ports:
         - containerPort: 3306      

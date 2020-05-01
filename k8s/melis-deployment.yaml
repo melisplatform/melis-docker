@@ -9,50 +9,56 @@ spec:
   replicas: 1                 # No. of replicas/pods to run in this deployment
   selector:
     matchLabels:             
-      app: polling-app-server
+      app: melis-app
   template:                   # Template for creating the pods in this deployment
     metadata:
       labels:                 
         app: melis-app
     spec:                     # Spec for the containers that will be run in the Pods
       containers:
-      - name: polling-app-server
-        image: callicoder/polling-app-server:1.0.0
+      - name: melisplatform
+        image: melisplatform/melis-k8s:php7.3
         imagePullPolicy: IfNotPresent
         ports:
           - name: http
-            containerPort: 8080 # The port that the container exposes
+            containerPort: 80 # The port that the container exposes
         resources:
           limits:
-            cpu: 0.2
+            cpu: "0.2"
             memory: "200Mi"
         env:                  # Environment variables supplied to the Pod
-        - name: SPRING_DATASOURCE_USERNAME # Name of the environment variable
+        - name: MYSQL_ADDON_DB 
           valueFrom:          # Get the value of environment variable from kubernetes secrets
             secretKeyRef:
-              name: mysql-user-pass
-              key: username
-        - name: SPRING_DATASOURCE_PASSWORD
+              name: mysql-addon-db
+              key: db
+        - name: MYSQL_ADDON_HOST
           valueFrom:
             secretKeyRef:
-              name: mysql-user-pass
+              name: mysql-addon-db
+              key: host
+        - name: MYSQL_ADDON_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
+              key: user
+        - name: MYSQL_ADDON_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
               key: password
-        - name: SPRING_DATASOURCE_URL
-          valueFrom:
-            secretKeyRef:
-              name: mysql-db-url
-              key: url
+
 ---
-apiVersion: v1                # API version
-kind: Service                 # Type of the kubernetes resource
+apiVersion: v1               
+kind: Service                
 metadata:                     
-  name: polling-app-server    # Name of the kubernetes resource
-  labels:                     # Labels that will be applied to this resource
-    app: polling-app-server
+  name: melis-app
+  labels:                     
+    app: melis-app
 spec:                         
   type: NodePort              # The service will be exposed by opening a Port on each node and proxying it. 
   selector:
-    app: polling-app-server   # The service exposes Pods with label `app=polling-app-server`
+    app: melis-app   
   ports:                      # Forward incoming connections on port 8080 to the target port 8080
   - name: http
     port: 8080
