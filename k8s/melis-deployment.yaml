@@ -6,7 +6,7 @@ metadata:
   labels:                     
     app: melis-app
 spec:
-  replicas: 1                 # No. of replicas/pods to run in this deployment
+  replicas: 2                 # No. of replicas/pods to run in this deployment
   selector:
     matchLabels:             
       app: melis-app
@@ -33,10 +33,7 @@ spec:
               name: mysql-addon-db
               key: db
         - name: MYSQL_ADDON_HOST
-          valueFrom:
-            secretKeyRef:
-              name: mysql-addon-db
-              key: host
+          value: melis-db
         - name: MYSQL_ADDON_USER
           valueFrom:
             secretKeyRef:
@@ -56,10 +53,10 @@ metadata:
   labels:                     
     app: melis-app
 spec:                         
-  type: NodePort              # The service will be exposed by opening a Port on each node and proxying it. 
+  type: LoadBalancer              # Default cloud provider loadbalancer 
   selector:
     app: melis-app   
   ports:                      # Forward incoming connections on port 8080 to the target port 8080
   - name: http
-    port: 8080
-    targetPort: 8080
+    port: 80
+    targetPort: 80
