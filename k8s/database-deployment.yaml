@@ -11,7 +11,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:                       
-    path: "/mnt/data"
+    path: "/mnt/melis"
   persistentVolumeReclaimPolicy: Retain
 ---    
 apiVersion: v1
@@ -27,17 +27,6 @@ spec:
   resources:
     requests:
       storage: 250Mi
----
-apiVersion: v1
-kind: ConfigMap                     # Mysql custom configuration
-metadata:
-  name: mysql-custom-config
-data:
-  my.custom.conf: |
-    !includedir /etc/mysql/conf.d/
-    !includedir /etc/mysql/mysql.conf.d/
-    [mysqld]
-    sql_mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 ---
 apiVersion: v1                   
 kind: Service     
@@ -73,8 +62,9 @@ spec:
         tier: mysql
     spec:                           # The spec for the containers that will be run inside the Pods in this deployment
       containers:
-      - image: mysql:5.7            
+      - image: mysql:5.7
         name: mysql
+        #command: ["/bin/bash", "docker-entrypoint-initdb.d/change-db-option.sh"]
         env:                        # Environment variables passed to the container 
         - name: MYSQL_ROOT_PASSWORD 
           valueFrom:                # Read environment variables from k8s secrets
@@ -102,9 +92,12 @@ spec:
         volumeMounts:
         - name: mysql-persistent-storage  
           mountPath: /var/lib/mysql
-        - name:
+        - name: mysql-custom-config
           mountPath: /etc/mysql/my.cnf
-          subPath: custom.my.cnf  
+          subPath: mysql.cnf
+        - name : mysql-db-option
+          mountPath: /docker-entrypoint-initdb.d/
+          #subPath: change-db-option.sh    
       volumes:                       # A PersistentVolume is mounted as a volume to the Pod  
       - name: mysql-persistent-storage
         persistentVolumeClaim:
@@ -112,4 +105,7 @@ spec:
       - name: mysql-custom-config
         configMap:
           name: mysql-custom-config
+      - name: mysql-db-option
+        configMap:
+          name: mysql-db-option    
           
