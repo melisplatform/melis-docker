@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1           
+kind: Deployment            
+metadata:
+  name: melis-app    
+  labels:                     
+    app: melis-app
+spec:
+  replicas: 2                 # No. of replicas/pods to run in this deployment
+  selector:
+    matchLabels:             
+      app: melis-app
+  template:                   # Template for creating the pods in this deployment
+    metadata:
+      labels:                 
+        app: melis-app
+    spec:                     # Spec for the containers that will be run in the Pods
+      containers:
+      - name: melisplatform
+        image: melisplatform/melis-k8s:php7.3
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: http
+            containerPort: 80 # The port that the container exposes
+        resources:
+          limits:
+            cpu: "0.2"
+            memory: "200Mi"
+        env:                  # Environment variables supplied to the Pod
+        - name: MYSQL_ADDON_DB 
+          valueFrom:          # Get the value of environment variable from kubernetes secrets
+            secretKeyRef:
+              name: mysql-addon-db
+              key: db
+        - name: MYSQL_ADDON_HOST
+          value: melis-db
+        - name: MYSQL_ADDON_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
+              key: user
+        - name: MYSQL_ADDON_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
+              key: password
+
+---
+apiVersion: v1               
+kind: Service                
+metadata:                     
+  name: melis-app
+  labels:                     
+    app: melis-app
+spec:                         
+  type: LoadBalancer              # Default cloud provider loadbalancer 
+  selector:
+    app: melis-app   
+  ports:                      # Forward incoming connections on port 8080 to the target port 8080
+  - name: http
+    port: 80
+    targetPort: 80
