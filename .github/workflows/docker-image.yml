@@ -18,10 +18,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build the Docker image php7.3
-        run: docker build . --file dev/php-apache-7.3/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.3
-      - name: psuh image php7.3 to docker hub
-        run: docker push melisplatform/melis-docker:dev-apache-7.3
+      - name: Build the Docker image php7.4
+        run: docker build . --file dev/php-apache-7.4/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.4
+      - name: psuh image php7.4 to docker hub
+        run: docker push melisplatform/melis-docker:dev-apache-7.4
 
   # dev-apache-7.3
   php73:
@@ -37,3 +37,49 @@ jobs:
       run: docker build . --file dev/php-apache-7.3/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.3
     - name: psuh image php7.3 to docker hub
       run: docker push melisplatform/melis-docker:dev-apache-7.3
+
+  # dev-apache-7.2
+  php72:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build the Docker image php7.2
+        run: docker build . --file dev/php-apache-7.2/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.2
+      - name: psuh image php7.2 to docker hub
+        run: docker push melisplatform/melis-docker:dev-apache-7.2
+
+  # dev-apache-7.1
+  php71:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build the Docker image php7.1
+        run: docker build . --file dev/php-apache-7.1/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.1
+      - name: psuh image php7.1 to docker hub
+        run: docker push melisplatform/melis-docker:dev-apache-7.1
+
+  # dev-apache-7.0
+  php70:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build the Docker image php7.0
+        run: docker build . --file dev/php-apache-7.0/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.0
+      - name: psuh image php7.0 to docker hub
+        run: docker push melisplatform/melis-docker:dev-apache-7.0
+
