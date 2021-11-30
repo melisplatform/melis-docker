@@ -10,6 +10,7 @@ git clone https://github.com/melisplatform/melis-docker.git
 ## Config 
 Change php version in **app/latest/.env** default tag **dev-apache-7.2**
 available tag: [here](https://hub.docker.com/repository/docker/melisplatform/melis-docker)
+* dev-apache-7.4
 * dev-apache-7.3
 * dev-apache-7.2
 * dev-apache-7.1
@@ -25,7 +26,6 @@ cd app/latest && docker-compose build --pull
 
 # Start stack
 ```bash
-cd app/latest && docker-compose build --pull
 docker-compose up -d
 ```
 
