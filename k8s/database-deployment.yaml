@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: PersistentVolume            # Create a PersistentVolume
+metadata:
+  name: melis-pv
+  labels:
+    type: local
+spec:
+  storageClassName: standard      # Storage class. A PV Claim requesting the same storageClass can be bound to this volume. 
+  capacity:
+    storage: 250Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:                       
+    path: "/mnt/melis"
+  persistentVolumeReclaimPolicy: Retain
+---    
+apiVersion: v1
+kind: PersistentVolumeClaim        # Create a PersistentVolumeClaim to request a PersistentVolume storage
+metadata:                          # Claim name and labels
+  name: melis-pv-claim
+  labels:
+    app: melis-db
+spec:                              
+  storageClassName: standard       # Request a certain storage class
+  accessModes:
+    - ReadWriteOnce               
+  resources:
+    requests:
+      storage: 250Mi
+---
+apiVersion: v1                   
+kind: Service     
+metadata:
+  name: melis-db        
+  labels:                        
+    app: melis-db
+spec:
+  ports:
+    - port: 3306
+  selector:                       # Selects any Pod with labels `app=melis-db-app,tier=mysql`
+    app: melis-db
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment                   
+metadata:
+  name: melis-mysql           
+  labels:                          
+    app: melis-db
+spec:
+  selector:
+    matchLabels:                    # This deployment applies to the Pods matching the specified labels
+      app: melis-db
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:                         
+    metadata:
+      labels:                       # Labels to be applied to the Pods in this deployment
+        app: melis-db
+        tier: mysql
+    spec:                           # The spec for the containers that will be run inside the Pods in this deployment
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        #command: ["/bin/bash", "docker-entrypoint-initdb.d/change-db-option.sh"]
+        env:                        # Environment variables passed to the container 
+        - name: MYSQL_ROOT_PASSWORD 
+          valueFrom:                # Read environment variables from k8s secrets
+            secretKeyRef:
+              name: mysql-addon-db
+              key: password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
+              key: db
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
+              key: user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-addon-db
+              key: password
+        ports:
+        - containerPort: 3306      
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage  
+          mountPath: /var/lib/mysql
+        - name: mysql-custom-config
+          mountPath: /etc/mysql/my.cnf
+          subPath: mysql.cnf
+        - name : mysql-db-option
+          mountPath: /docker-entrypoint-initdb.d/
+          #subPath: change-db-option.sh    
+      volumes:                       # A PersistentVolume is mounted as a volume to the Pod  
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: melis-pv-claim
+      - name: mysql-custom-config
+        configMap:
+          name: mysql-custom-config
+      - name: mysql-db-option
+        configMap:
+          name: mysql-db-option    
+          
