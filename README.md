@@ -24,7 +24,7 @@ PS: make sure that the port 8080 is not used in you host/or you can change it in
 
 ## Build 
 ```bash
-cd app/latest && docker-compose build --pull
+cd melis-docker/app/latest && docker-compose up --build
 ```
 
 # Start stack
@@ -33,7 +33,7 @@ docker-compose up -d
 ```
 
 # Enjoy it
-Open your favorite browser and paste this url http://localhost:8080
+Open your favorite browser and paste this URL http://localhost:8080
 
 # Shutdown stack:
 ```bash
