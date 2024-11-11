@@ -15,6 +15,9 @@ available tag: [here](https://hub.docker.com/repository/docker/melisplatform/mel
 * dev-apache-7.2
 * dev-apache-7.1
 * dev-apache-7.0
+* dev-apache-8.1
+* dev-apache-8.2
+* dev-apache-8.3
 
 #
 PS: make sure that the port 8080 is not used in you host/or you can change it in the *.env* with any port

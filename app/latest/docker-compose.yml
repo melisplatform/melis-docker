@@ -1,44 +1,45 @@
-version: '3.2'
 services:
-  melisdocker:
-    build:
-       context: "."
-       args:
-          - tag=${TAG}
-    container_name: ${MELIS_CONTAINER_NAME}
-    restart: always
-    ports:
-      - ${MELIS_PLATFORM_PORT}:80
-    volumes:
-      - ./conf/vhost.conf:/etc/apache2/sites-available/000-default.conf
-      - ./conf/php.ini:/usr/local/etc/php/php.ini
-      - melisplatform_data:/var/www/html  
+  php:
+    platform: linux/amd64
+    env_file: ./.env
     depends_on:
       - db
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:80"
+    # Mount the parent directory of where this repo is cloned
+    volumes: ["../../../:/var/www/melis"]
     environment:
-        MYSQL_ADDON_DB: ${MYSQL_DB}
-        MYSQL_ADDON_HOST: ${MYSQL_HOST}
-        MYSQL_ADDON_USER: ${MYSQL_USER}
-        MYSQL_ADDON_PASSWORD: ${MYSQL_PASSWORD}
+      MELIS_PLATFORM: ${MELIS_PLATFORM}
+      MELIS_MODULE: ${MELIS_MODULE}
     networks:
-      - front
-      - back
+      - melis
   db:
     image: mysql:${MYSQL_VERSION}
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
-    container_name: ${MYSQL_CONTAINER_NAME}
-    restart: always
-    environment:
-         MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
-         MYSQL_DATABASE: ${MYSQL_DB}
-    networks:
-      - back
+    platform: linux/amd64
+    env_file: ./.env
     volumes:
       - melis_mysql_data:/var/lib/mysql
-      - ./conf/my.cnf:/etc/mysql/my.cnf  
+    restart: always
+    ports:
+      - "3306:${MYSQL_PORT}"
+    environment:
+      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db:${MYSQL_PORT}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command:
+      [
+        "mysqld",
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_general_ci",
+      ]
+    networks:
+      - melis
+
 networks:
-  front: 
-  back:
+  melis:
 volumes:
   melis_mysql_data:
-  melisplatform_data:
