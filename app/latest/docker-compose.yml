@@ -7,15 +7,29 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+      args:
+        - APP_NAME=${APP_NAME}
+        - TZ=${TZ}
+        - MELIS_PLATFORM=${MELIS_PLATFORM}
+        - MELIS_MODULE=${MELIS_MODULE}
+      cache_from:
+        - php:8.3-apache
+      # Enable BuildKit for faster builds
+      x-bake:
+        platforms: ["linux/amd64"]
+        cache-from: ["type=local,src=/tmp/.buildx-cache"]
+        cache-to: ["type=local,dest=/tmp/.buildx-cache"]
     ports:
       - "8080:80"
-    # Mount the parent directory of where this repo is cloned
-    volumes: ["../../../:/var/www/melis"]
+    volumes:
+      - ../../../:/var/www/${APP_NAME}
+      - composer-cache:/root/.composer/cache
     environment:
       MELIS_PLATFORM: ${MELIS_PLATFORM}
       MELIS_MODULE: ${MELIS_MODULE}
     networks:
       - melis
+
   db:
     image: mysql:${MYSQL_VERSION}
     platform: linux/amd64
@@ -24,12 +38,13 @@ services:
       - melis_mysql_data:/var/lib/mysql
     restart: always
     ports:
-      - "3306:${MYSQL_PORT}"
+      - "33060:${MYSQL_PORT}"
     environment:
       MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db:${MYSQL_PORT}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
     command:
       [
         "mysqld",
@@ -41,5 +56,7 @@ services:
 
 networks:
   melis:
+
 volumes:
   melis_mysql_data:
+  composer-cache:

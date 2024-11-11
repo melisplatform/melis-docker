@@ -1,0 +1,6 @@
+../../../.git
+docker-compose*
+../../README.md
+../../../cache
+../../../vendor
+../../../node_modules
