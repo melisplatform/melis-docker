@@ -1,3 +1,4 @@
+# docker-compose.yml
 services:
   php:
     platform: linux/amd64
@@ -5,7 +6,7 @@ services:
     depends_on:
       - db
     build:
-      context: .
+      context: ${PROJECT_DIR}
       dockerfile: ./Dockerfile
       args:
         - APP_NAME=${APP_NAME}
@@ -14,7 +15,6 @@ services:
         - MELIS_MODULE=${MELIS_MODULE}
       cache_from:
         - php:8.3-apache
-      # Enable BuildKit for faster builds
       x-bake:
         platforms: ["linux/amd64"]
         cache-from: ["type=local,src=/tmp/.buildx-cache"]
@@ -22,7 +22,9 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ../../../:/var/www/${APP_NAME}
+      - type: bind
+        source: ${PROJECT_DIR}
+        target: /var/www/${APP_NAME}
       - composer-cache:/root/.composer/cache
     environment:
       MELIS_PLATFORM: ${MELIS_PLATFORM}
