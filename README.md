@@ -11,21 +11,6 @@ This repository contains Dockerfiles to be used for [Melis Platform](https://www
 git clone https://github.com/melisplatform/melis-docker.git
 ```
 
-### Build Components
-
-#### Configuration
-Change PHP version in **app/latest/.env** default tag **dev-apache-7.2**
-
-Available tags: [View on Docker Hub](https://hub.docker.com/repository/docker/melisplatform/melis-docker)
-* dev-apache-7.4
-* dev-apache-7.3
-* dev-apache-7.2
-* dev-apache-7.1
-* dev-apache-7.0
-* dev-apache-8.1
-* dev-apache-8.2
-* dev-apache-8.3
-
 > **Note:** Make sure that port 8080 is not used on your host. You can change it in the *.env* file if needed.
 
 ### Build and Run
@@ -53,6 +38,22 @@ Open your favorite browser and navigate to: http://localhost:8080
 ```bash
 docker-compose down -v
 ```
+
+### Build Components
+
+#### Configuration
+Change PHP version in **app/latest/.env** default tag **dev-apache-8.2**
+
+Available tags: [View on Docker Hub](https://hub.docker.com/repository/docker/melisplatform/melis-docker)
+* dev-apache-8.4
+* dev-apache-8.3
+* dev-apache-8.2
+* dev-apache-8.1
+* dev-apache-8.0
+* dev-apache-9.1
+* dev-apache-9.2
+* dev-apache-9.3
+
 
 ## Contributing
 
