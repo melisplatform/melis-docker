@@ -1,9 +1,11 @@
 services:
   php:
     platform: linux/amd64
+    container_name: ${MELIS_CONTAINER_NAME}-php
     env_file: ./.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -12,51 +14,65 @@ services:
         - TZ=${TZ}
         - MELIS_PLATFORM=${MELIS_PLATFORM}
         - MELIS_MODULE=${MELIS_MODULE}
-      cache_from:
-        - php:8.3-apache
-      # Enable BuildKit for faster builds
       x-bake:
         platforms: ["linux/amd64"]
         cache-from: ["type=local,src=/tmp/.buildx-cache"]
         cache-to: ["type=local,dest=/tmp/.buildx-cache"]
     ports:
-      - "8080:80"
+      - 8080:80
     volumes:
       - ../../../:/var/www/${APP_NAME}
       - composer-cache:/root/.composer/cache
     environment:
+      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db:${MYSQL_PORT}
       MELIS_PLATFORM: ${MELIS_PLATFORM}
       MELIS_MODULE: ${MELIS_MODULE}
+      MYSQL_HOST: ${MELIS_CONTAINER_NAME}-db
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     networks:
       - melis
+    restart: unless-stopped
 
   db:
     image: mysql:${MYSQL_VERSION}
+    container_name: ${MELIS_CONTAINER_NAME}-db
     platform: linux/amd64
     env_file: ./.env
     volumes:
       - melis_mysql_data:/var/lib/mysql
     restart: always
     ports:
-      - "33060:${MYSQL_PORT}"
+      - 33061:${MYSQL_PORT}
     environment:
       MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db:${MYSQL_PORT}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
     command:
       [
         "mysqld",
         "--character-set-server=utf8mb4",
         "--collation-server=utf8mb4_general_ci",
+        "--default-authentication-plugin=mysql_native_password"
       ]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - melis
 
 networks:
   melis:
+    name: ${MELIS_CONTAINER_NAME}-network
+    driver: bridge
 
 volumes:
   melis_mysql_data:
+    name: ${MELIS_CONTAINER_NAME}-mysql-data
   composer-cache:
+    name: ${MELIS_CONTAINER_NAME}-composer-cache
