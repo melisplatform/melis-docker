@@ -1,0 +1,45 @@
+ARG OS_VERSION=10
+ARG ZENDPHP_VERSION=7.4
+ARG BASE_IMAGE=fpm
+FROM cr.zend.com/zendphp/${ZENDPHP_VERSION}:debian-${OS_VERSION}-${BASE_IMAGE}
+
+# Customizations
+ARG TIMEZONE=UTC
+ARG INSTALL_COMPOSER=false
+ARG ZEND_PROFILE=production
+ARG SYSTEM_PACKAGES
+ARG ZEND_EXTENSIONS_LIST
+ARG PECL_EXTENSIONS_LIST
+ARG POST_BUILD_BASH
+
+## Prepare tzdata
+ENV TZ=$TIMEZONE \
+    PROFILE=$ZEND_PROFILE
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt update \
+    && apt install unzip
+    
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php \
+	&& mv composer.phar /usr/bin/composer
+
+# Installing Melis Platform Skeleton
+RUN mkdir -p /usr/src/melisplatform && cd /usr/src/melisplatform \
+    && curl -sS https://codeload.github.com/melisplatform/melis-platform-skeleton/zip/master -o melis-platform-skeleton.zip \
+    && unzip melis-platform-skeleton.zip
+
+## Place configurations
+COPY ./data/conf/fpm/melis.conf /etc/zendphp/fpm/pool.d/www.conf
+
+## Copy shell scripts
+COPY ./data/scripts/wait-for.sh /usr/local/sbin/wait-for
+COPY ./data/scripts/wait-for-dbs.sh /entrypoint.d/99-wait-for-dbs.sh
+COPY ./data/scripts/post-build.sh /post-build.sh
+RUN chmod +x /usr/local/sbin/wait-for && \
+    chmod +x /entrypoint.d/99-wait-for-dbs.sh && \
+    chmod +x /post-build.sh
+
+## Customize PHP runtime according
+## to the given building arguments
+RUN ZendPHPCustomizeWithBuildArgs.sh

@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+
+  web-server:
+    container_name: ws
+    image: zendphp-esc/nginx
+    build: 
+      context: .
+      dockerfile: Dockerfile.Nginx
+    expose:
+      - 8081
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    extra_hosts:
+      - melis.lcl:127.0.0.1
+      - melis.local:127.0.0.1
+
+  php-fpm:
+    container_name: melisphp
+    image: zendphp-esc/fpm
+    build: 
+      context: .
+      dockerfile: Dockerfile.FPM
+      args:
+        TIMEZONE: 'Europe/Paris'
+        ZENDPHP_VERSION: 7.4
+        SYSTEM_PACKAGES: 'netcat unzip'
+        ZEND_EXTENSIONS_LIST: 'mysql redis mbstring gd mysqli pdo_mysql bz2 intl zip curl'
+        POST_BUILD_BASH: '/post-build.sh'
+    expose:
+      - 9000
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/local/bin/fpm-healthcheck.sh"]
+      interval: 10s
+      timeout: 2s
+      retries: 2
+  
+  db:
+    image: mysql:${MYSQL_VERSION}
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    container_name: ${MYSQL_CONTAINER_NAME}
+    restart: always
+    environment:
+         MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+         MYSQL_DATABASE: ${MYSQL_DB}
+    volumes:
+      - melis_mysql_data:/var/lib/mysql
+      - ./data/conf/my.cnf:/etc/mysql/my.cnf 
+
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+
+volumes:
+  melis_mysql_data:
+  redis-data:
