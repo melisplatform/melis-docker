@@ -35,7 +35,9 @@ RUN apt-get update -y \
     zlib1g-dev \
     libpng-dev \
     tzdata \
-    systemd-timesyncd \
+    # Add libicu-dev for the intl extension
+    libicu-dev \
+    # systemd-timesyncd \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
@@ -54,21 +56,14 @@ RUN apt-get update -y \
     && echo ${TZ} > /etc/timezone \
     && dpkg-reconfigure --frontend noninteractive tzdata
 
-<<<<<<< Updated upstream
 FROM builder AS config
-=======
-## COPY FILES
-COPY ./conf/php.ini /usr/local/etc/php/conf.d/php-melis.ini
-COPY ./conf/my.cnf /etc/mysql/conf.d/mysql.cnf
-COPY ./conf/vhost.conf /etc/apache2/sites-available/vhost.conf
-COPY ./conf/apache2.conf /etc/apache2/apache2.conf
-COPY --chown=www-data:www-data ./ /var/www/${APP_NAME}
->>>>>>> Stashed changes
 
 COPY ./conf/php.ini /usr/local/etc/php/conf.d/php-melis.ini
 COPY ./conf/my.cnf /etc/mysql/conf.d/mysql.cnf
 COPY ./conf/vhost.conf /etc/apache2/sites-available/vhost.conf
 COPY ./conf/apache2.conf /etc/apache2/apache2.conf
+COPY --chown=www-data:www-data ./ /var/www/${APP_NAME}
+
 
 # Final stage
 FROM config
