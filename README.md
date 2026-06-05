@@ -8,7 +8,8 @@ This repository contains Dockerfiles to be used for [Melis Platform](https://www
 |------|----------|--------|
 | **Pre-built image** — pull a ready-to-run Melis (no build) + DB, finish via the web installer | Fastest evaluation / "just run it" | [`prebuilt/`](prebuilt/) |
 | **Turnkey build** — builds a fresh Melis skeleton on your host, editable code in `./melis` | Developers who want the code locally | [`install/`](install/) |
-| **Dev images (legacy)** — mount an existing Melis project, pick a PHP tag | Existing projects | [`app/latest/`](app/latest/) — see *Getting Started* below |
+| **nginx + PHP-FPM** — production-style stack (nginx front, PHP-FPM, MySQL), skeleton baked | A more production-like topology | [`fpm/`](fpm/) |
+| **Dev base images** — mount an existing Melis project, pick a PHP tag (Apache or FPM) | Existing projects | [`app/latest/`](app/latest/) — see *Getting Started* below |
 
 > All paths finish the same way: the **native Melis web installer** at
 > http://localhost:8080 sets up the DB schema, admin user and the optional demo site.
@@ -53,20 +54,16 @@ docker-compose down -v
 ### Build Components
 
 #### Configuration
-Change PHP version in **app/latest/.env** default tag **dev-apache-8.2**
+Change PHP version in **app/latest/.env** (default **dev-apache-8.3**)
 
 Available tags (PHP versions shipped in [`dev/`](dev/)) — [View on Docker Hub](https://hub.docker.com/repository/docker/melisplatform/melis-docker):
 * dev-apache-8.3  ← recommended (latest version supported by Melis 5.3.x)
 * dev-apache-8.2
 * dev-apache-8.1
-* dev-apache-7.4
-* dev-apache-7.3
-* dev-apache-7.2
-* dev-apache-7.1
-* dev-apache-7.0
 
-> Melis Platform 5.3.x requires **PHP 8.1 – 8.3**. Use a PHP 8.x tag for a current
-> install; the PHP 7.x tags are kept only for legacy projects.
+> Melis Platform 5.3.x requires **PHP 8.1 – 8.3** (composer `^8.1|^8.3`). The old
+> `dev-apache-7.x` tags are **not compatible** with current Melis and are no longer
+> shipped here; older images may still exist on Docker Hub for legacy projects.
 
 
 ## Contributing

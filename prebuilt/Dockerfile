@@ -56,4 +56,7 @@ COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
+# Container is healthy once Apache serves the app (the installer redirects / -> 200)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+    CMD curl -fsS http://localhost/ -o /dev/null || exit 1
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -40,8 +40,10 @@ services:
   db:
     image: mysql:${MYSQL_VERSION:-8.4}
     container_name: ${MELIS_CONTAINER_NAME:-melis}-db
+    # Bound to localhost only — the DB is reachable container-to-container over the
+    # melis network; this host mapping is just for a local GUI client, not the LAN.
     ports:
-      - "${DB_HOST_PORT:-33061}:3306"
+      - "127.0.0.1:${DB_HOST_PORT:-33061}:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-melis}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-melis}
