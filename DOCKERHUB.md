@@ -23,23 +23,35 @@ Source & full docs: **https://github.com/melisplatform/melis-docker**
 
 ## Quick start
 
-The fastest path — pull and run, then bring any MySQL 8.x:
+The image needs a MySQL database. The simplest self-contained way is a small
+Docker network with a MySQL container and the Melis image — here `MYSQL_HOST` is
+the **database container's name** on that network (`melis-db`):
 
 ```bash
-docker run -d --name melis -p 8080:80 \
-  -e MYSQL_HOST=your-db-host \
-  -e MYSQL_DATABASE=melis \
-  -e MYSQL_USER=melis \
-  -e MYSQL_PASSWORD=melis \
+docker network create melis
+
+docker run -d --name melis-db --network melis \
+  -e MYSQL_DATABASE=melis -e MYSQL_USER=melis \
+  -e MYSQL_PASSWORD=melis -e MYSQL_ROOT_PASSWORD=melis \
+  mysql:8.4 --collation-server=utf8mb4_general_ci
+
+docker run -d --name melis --network melis -p 8080:80 \
+  -e MYSQL_HOST=melis-db \
+  -e MYSQL_DATABASE=melis -e MYSQL_USER=melis -e MYSQL_PASSWORD=melis \
   melisplatform/melis-docker:latest
 ```
 
-> `MYSQL_HOST` must be a hostname **without** `:port` (e.g. `db`, not `db:3306`).
+Then open **http://localhost:8080** and follow the web installer (use the same DB
+values: host `melis-db`, database/user/password `melis`).
 
-Then open **http://localhost:8080** and follow the web installer.
+> `MYSQL_HOST` is a hostname **without** `:port` (e.g. `melis-db`, not `melis-db:3306`).
+> Pointing at an existing MySQL server instead? Set `MYSQL_HOST` to that server's
+> host (and make sure the container can reach it — e.g. `host.docker.internal` for a
+> DB running on your machine).
 
-Prefer a one-command stack that includes the database? Use a compose file from the
-repository:
+### Even simpler: a ready-made compose stack
+
+The repository ships compose files that wire the image + database together for you:
 
 - [`prebuilt/`](https://github.com/melisplatform/melis-docker/tree/master/prebuilt) — Apache image + MySQL
 - [`fpm/`](https://github.com/melisplatform/melis-docker/tree/master/fpm) — nginx + PHP-FPM + MySQL
