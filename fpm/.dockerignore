@@ -1,0 +1,7 @@
+# Keep the build context minimal and never ship local config/secrets
+.env
+*.env
+!.env.example
+README.md
+docker-compose.yml
+.DS_Store
