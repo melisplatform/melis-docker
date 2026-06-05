@@ -1,6 +1,5 @@
 services:
   php:
-    platform: linux/amd64
     container_name: ${MELIS_CONTAINER_NAME}-php
     env_file: ./.env
     depends_on:
@@ -15,7 +14,6 @@ services:
         - MELIS_PLATFORM=${MELIS_PLATFORM}
         - MELIS_MODULE=${MELIS_MODULE}
       x-bake:
-        platforms: ["linux/amd64"]
         cache-from: ["type=local,src=/tmp/.buildx-cache"]
         cache-to: ["type=local,dest=/tmp/.buildx-cache"]
     ports:
@@ -24,7 +22,8 @@ services:
       - ../../../:/var/www/${APP_NAME}
       - composer-cache:/root/.composer/cache
     environment:
-      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db:${MYSQL_PORT}
+      # Host without ":port" — a "host:port" value breaks Melis' flyway/JDBC URL.
+      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db
       MELIS_PLATFORM: ${MELIS_PLATFORM}
       MELIS_MODULE: ${MELIS_MODULE}
       MYSQL_HOST: ${MELIS_CONTAINER_NAME}-db
@@ -38,25 +37,26 @@ services:
   db:
     image: mysql:${MYSQL_VERSION}
     container_name: ${MELIS_CONTAINER_NAME}-db
-    platform: linux/amd64
     env_file: ./.env
     volumes:
       - melis_mysql_data:/var/lib/mysql
     restart: always
     ports:
-      - 33061:${MYSQL_PORT}
+      # Bound to localhost only (DB not exposed on the LAN)
+      - 127.0.0.1:33061:${MYSQL_PORT}
     environment:
-      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db:${MYSQL_PORT}
+      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME}-db
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     command:
+      # NB: --default-authentication-plugin was removed in MySQL 8.4; rely on the
+      # server default (caching_sha2_password), which PHP 8.x connects to natively.
       [
         "mysqld",
         "--character-set-server=utf8mb4",
-        "--collation-server=utf8mb4_general_ci",
-        "--default-authentication-plugin=mysql_native_password"
+        "--collation-server=utf8mb4_general_ci"
       ]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
