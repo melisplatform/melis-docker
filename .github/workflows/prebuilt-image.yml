@@ -1,8 +1,9 @@
-name: Pre-built Melis image
+name: Pre-built Melis images
 
-# Builds and publishes the pre-built Melis image (prebuilt/Dockerfile), which
-# bakes the Melis skeleton at build time. Pushes to Docker Hub only on master
-# pushes and version tags; pull requests build-only (no push, no secrets needed).
+# Builds and publishes the pre-built Melis images that bake the skeleton at build
+# time: the Apache (mod_php) image from prebuilt/, and the nginx + PHP-FPM image
+# from fpm/. Pushes to Docker Hub only on master pushes and version tags; pull
+# requests build-only (no push, no secrets needed).
 
 on:
   push:
@@ -10,21 +11,36 @@ on:
     tags: [ 'v*' ]
     paths:
       - 'prebuilt/**'
+      - 'fpm/**'
       - '.github/workflows/prebuilt-image.yml'
   pull_request:
     branches: [ master ]
     paths:
       - 'prebuilt/**'
+      - 'fpm/**'
       - '.github/workflows/prebuilt-image.yml'
   workflow_dispatch:
 
 env:
   IMAGE: melisplatform/melis-docker
-  PHP_TAG: php8.3
 
 jobs:
-  prebuilt:
+  baked:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Apache (mod_php) pre-built image → latest / php8.3
+          - dir: prebuilt
+            latest: latest
+            pinned: php8.3
+            tagsuffix: ""
+          # nginx + PHP-FPM pre-built image → fpm-latest / fpm-php8.3
+          - dir: fpm
+            latest: fpm-latest
+            pinned: fpm-php8.3
+            tagsuffix: "-fpm"
     steps:
       - uses: actions/checkout@v4
 
@@ -48,22 +64,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # latest + php-version tag on master; add the git tag (e.g. v5.3.0) on tags.
       - name: Docker metadata (tags / labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ env.PHP_TAG }},enable={{is_default_branch}}
-            type=ref,event=tag
+            type=raw,value=${{ matrix.latest }},enable={{is_default_branch}}
+            type=raw,value=${{ matrix.pinned }},enable={{is_default_branch}}
+            type=ref,event=tag,suffix=${{ matrix.tagsuffix }}
 
-      - name: Build and push (prebuilt/)
+      - name: Build and push (${{ matrix.dir }}/)
         uses: docker/build-push-action@v6
         with:
-          context: ./prebuilt
-          file: ./prebuilt/Dockerfile
+          context: ./${{ matrix.dir }}
+          file: ./${{ matrix.dir }}/Dockerfile
           push: ${{ steps.cfg.outputs.push }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
