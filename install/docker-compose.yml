@@ -1,0 +1,75 @@
+# Melis Platform — turnkey local install.
+#   1) cp .env.example .env
+#   2) docker compose up --build
+#   3) open http://localhost:8080 and follow the Melis web installer
+services:
+  php:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        APP_NAME: ${APP_NAME:-melis}
+        TZ: ${TZ:-Europe/Paris}
+    container_name: ${MELIS_CONTAINER_NAME:-melis}-php
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${HOST_PORT:-8080}:80"
+    # The Melis skeleton is created here on first run and kept on the host so
+    # you can edit the code. To start clean, delete ./melis and re-run.
+    volumes:
+      - ./melis:/var/www/${APP_NAME:-melis}
+      - composer-cache:/root/.composer/cache
+    environment:
+      APP_NAME: ${APP_NAME:-melis}
+      TZ: ${TZ:-Europe/Paris}
+      HOST_PORT: ${HOST_PORT:-8080}
+      # NOTE: host without :port — keep it clean (a "host:port" value breaks flyway/JDBC)
+      MYSQL_HOST: ${MELIS_CONTAINER_NAME:-melis}-db
+      MYSQL_HOSTNAME: ${MELIS_CONTAINER_NAME:-melis}-db
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-melis}
+      MYSQL_USER: ${MYSQL_USER:-melis}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-melis}
+      MELIS_PLATFORM: ${MELIS_PLATFORM:-local}
+      MELIS_MODULE: ${MELIS_MODULE:-MySite}
+    networks:
+      - melis
+    restart: unless-stopped
+
+  db:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    container_name: ${MELIS_CONTAINER_NAME:-melis}-db
+    # Bound to localhost only — the DB is reachable container-to-container over the
+    # melis network; this host mapping is just for a local GUI client, not the LAN.
+    ports:
+      - "127.0.0.1:${DB_HOST_PORT:-33061}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-melis}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-melis}
+      MYSQL_USER: ${MYSQL_USER:-melis}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-melis}
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_general_ci"
+    volumes:
+      - melis_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER:-melis}", "-p${MYSQL_PASSWORD:-melis}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - melis
+    restart: always
+
+networks:
+  melis:
+    name: ${MELIS_CONTAINER_NAME:-melis}-network
+
+volumes:
+  melis_db_data:
+    name: ${MELIS_CONTAINER_NAME:-melis}-db-data
+  composer-cache:
+    name: ${MELIS_CONTAINER_NAME:-melis}-composer-cache

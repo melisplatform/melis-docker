@@ -1,0 +1,86 @@
+name: Pre-built Melis images
+
+# Builds and publishes the pre-built Melis images that bake the skeleton at build
+# time: the Apache (mod_php) image from prebuilt/, and the nginx + PHP-FPM image
+# from fpm/. Pushes to Docker Hub only on master pushes and version tags; pull
+# requests build-only (no push, no secrets needed).
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ 'v*' ]
+    paths:
+      - 'prebuilt/**'
+      - 'fpm/**'
+      - '.github/workflows/prebuilt-image.yml'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'prebuilt/**'
+      - 'fpm/**'
+      - '.github/workflows/prebuilt-image.yml'
+  workflow_dispatch:
+
+env:
+  IMAGE: melisplatform/melis-docker
+
+jobs:
+  baked:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Apache (mod_php) pre-built image → latest / php8.3
+          - dir: prebuilt
+            latest: latest
+            pinned: php8.3
+            tagsuffix: ""
+          # nginx + PHP-FPM pre-built image → fpm-latest / fpm-php8.3
+          - dir: fpm
+            latest: fpm-latest
+            pinned: fpm-php8.3
+            tagsuffix: "-fpm"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Only push on master / tags, and only when Docker Hub creds are configured.
+      - name: Decide whether to push
+        id: cfg
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            echo "push=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "push=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Login to Docker Hub
+        if: steps.cfg.outputs.push == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker metadata (tags / labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ matrix.latest }},enable={{is_default_branch}}
+            type=raw,value=${{ matrix.pinned }},enable={{is_default_branch}}
+            type=ref,event=tag,suffix=${{ matrix.tagsuffix }}
+
+      - name: Build and push (${{ matrix.dir }}/)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.dir }}
+          file: ./${{ matrix.dir }}/Dockerfile
+          push: ${{ steps.cfg.outputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

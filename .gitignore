@@ -1,1 +1,20 @@
+# IDE / editors
 .idea
+.vscode
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local tooling
+.claude/settings.local.json
+
+# Secrets / local config — never commit a real .env (keep .env.example only)
+.env
+**/.env
+!**/.env.example
+
+# Turnkey install: the Melis skeleton created on the host at first run
+install/melis/
+/melis/

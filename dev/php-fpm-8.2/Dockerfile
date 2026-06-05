@@ -1,8 +1,8 @@
-# Melis Platform — dev base image (PHP 8.3 + Apache + Composer)
-# A ready-to-use PHP/Apache base with the extensions Melis needs. Mount your Melis
-# project into the container (see app/latest/ for a full local dev stack).
-# Build: docker build -t melisplatform/melis-docker:dev-apache-8.3 .
-FROM php:8.3-apache
+# Melis Platform — dev base image (PHP 8.2 FPM + Composer)
+# PHP-FPM base with the extensions Melis needs (listens on :9000). Put a web server
+# (e.g. nginx) in front — see fpm/ for a ready-to-run nginx + php-fpm stack.
+# Build: docker build -t melisplatform/melis-docker:dev-fpm-8.2 .
+FROM php:8.2-fpm
 
 ARG TZ=Europe/Paris
 ENV TZ=${TZ}
@@ -21,9 +21,8 @@ RUN apt-get update -y \
     && ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
-# Composer (official image) + Apache modules Melis relies on
+# Composer (official image)
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
-RUN a2enmod rewrite headers
 
-EXPOSE 80
-CMD ["apache2-foreground"]
+EXPOSE 9000
+CMD ["php-fpm"]

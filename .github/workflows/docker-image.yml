@@ -1,85 +1,63 @@
-name: Docker Image CI
+name: Dev base images
+
+# Builds the per-PHP-version Melis dev base images under dev/ — both the Apache
+# (mod_php) and PHP-FPM variants, PHP 8.1–8.3 (the versions Melis 5.3.x supports:
+# composer constraint ^8.1|^8.3). Pushes to Docker Hub as
+# melisplatform/melis-docker:dev-{apache,fpm}-<version> on master only; pull
+# requests build without pushing (no secrets required).
 
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'dev/**'
+      - '.github/workflows/docker-image.yml'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'dev/**'
+      - '.github/workflows/docker-image.yml'
+  workflow_dispatch:
+
+env:
+  IMAGE: melisplatform/melis-docker
 
 jobs:
-
-  # dev-apache-7.4
-  php74:
+  dev-images:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ["apache", "fpm"]
+        php: ["8.1", "8.2", "8.3"]
     steps:
-      - uses: actions/checkout@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Decide whether to push
+        id: cfg
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            echo "push=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "push=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Login to Docker Hub
+        if: steps.cfg.outputs.push == 'true'
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build the Docker image php7.4
-        run: docker build . --file dev/php-apache-7.4/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.4
-      - name: psuh image php7.4 to docker hub
-        run: docker push melisplatform/melis-docker:dev-apache-7.4
 
-  # dev-apache-7.3
-  php73:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Login to DockerHub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build the Docker image php7.3
-      run: docker build . --file dev/php-apache-7.3/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.3
-    - name: psuh image php7.3 to docker hub
-      run: docker push melisplatform/melis-docker:dev-apache-7.3
-
-  # dev-apache-7.2
-  php72:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Build and push dev-${{ matrix.variant }}-${{ matrix.php }}
+        uses: docker/build-push-action@v6
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build the Docker image php7.2
-        run: docker build . --file dev/php-apache-7.2/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.2
-      - name: psuh image php7.2 to docker hub
-        run: docker push melisplatform/melis-docker:dev-apache-7.2
-
-  # dev-apache-7.1
-  php71:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build the Docker image php7.1
-        run: docker build . --file dev/php-apache-7.1/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.1
-      - name: psuh image php7.1 to docker hub
-        run: docker push melisplatform/melis-docker:dev-apache-7.1
-
-  # dev-apache-7.0
-  php70:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build the Docker image php7.0
-        run: docker build . --file dev/php-apache-7.0/Dockerfile --tag melisplatform/melis-docker:dev-apache-7.0
-      - name: psuh image php7.0 to docker hub
-        run: docker push melisplatform/melis-docker:dev-apache-7.0
-
+          context: ./dev/php-${{ matrix.variant }}-${{ matrix.php }}
+          file: ./dev/php-${{ matrix.variant }}-${{ matrix.php }}/Dockerfile
+          push: ${{ steps.cfg.outputs.push }}
+          tags: ${{ env.IMAGE }}:dev-${{ matrix.variant }}-${{ matrix.php }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
