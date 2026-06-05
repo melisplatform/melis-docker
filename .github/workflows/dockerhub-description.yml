@@ -1,0 +1,28 @@
+name: Sync Docker Hub description
+
+# Pushes DOCKERHUB.md to the Docker Hub repository's overview/description and sets
+# the short description. Runs on master when DOCKERHUB.md changes, or on demand.
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'DOCKERHUB.md'
+      - '.github/workflows/dockerhub-description.yml'
+  workflow_dispatch:
+
+jobs:
+  description:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Docker Hub description
+        if: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: melisplatform/melis-docker
+          short-description: "Ready-to-run Docker images for Melis Platform (PHP/Laminas CMS) — multi-arch, web installer."
+          readme-filepath: ./DOCKERHUB.md
