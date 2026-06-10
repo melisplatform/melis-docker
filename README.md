@@ -57,13 +57,14 @@ docker-compose down -v
 Change PHP version in **app/latest/.env** (default **dev-apache-8.3**)
 
 Available tags (PHP versions shipped in [`dev/`](dev/)) — [View on Docker Hub](https://hub.docker.com/repository/docker/melisplatform/melis-docker):
-* dev-apache-8.3  ← recommended (latest version supported by Melis 5.3.x)
-* dev-apache-8.2
-* dev-apache-8.1
 
-> Melis Platform 5.3.x requires **PHP 8.1 – 8.3** (composer `^8.1|^8.3`). The old
-> `dev-apache-7.x` tags are **not compatible** with current Melis and are no longer
-> shipped here; older images may still exist on Docker Hub for legacy projects.
+Apache (`mod_php`) — `dev-apache-8.1`, `dev-apache-8.2`, **`dev-apache-8.3`** (recommended), `dev-apache-8.4`
+PHP-FPM — `dev-fpm-8.1`, `dev-fpm-8.2`, `dev-fpm-8.3`, `dev-fpm-8.4`
+
+> **PHP 8.3** is the recommended/default version (officially supported by Melis 5.3.x).
+> **PHP 8.4** works via the maintained Laminas forks (see melisplatform/melis-core#24);
+> it ships as an additional tag — `latest` stays on 8.3 until 8.4 is fully released
+> upstream. The old `dev-apache-7.x` tags are **not compatible** with current Melis.
 
 
 ## Contributing
