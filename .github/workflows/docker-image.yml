@@ -1,7 +1,7 @@
 name: Dev base images
 
 # Builds the per-PHP-version Melis dev base images under dev/ — both the Apache
-# (mod_php) and PHP-FPM variants, PHP 8.1–8.3 (the versions Melis 5.3.x supports:
+# (mod_php) and PHP-FPM variants, PHP 8.1–8.4 (8.4 via the maintained Laminas forks; see melis-core#24) (composer
 # composer constraint ^8.1|^8.3). Pushes to Docker Hub as
 # melisplatform/melis-docker:dev-{apache,fpm}-<version> on master only; pull
 # requests build without pushing (no secrets required).
@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         variant: ["apache", "fpm"]
-        php: ["8.1", "8.2", "8.3"]
+        php: ["8.1", "8.2", "8.3", "8.4"]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
