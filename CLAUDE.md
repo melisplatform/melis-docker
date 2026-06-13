@@ -34,6 +34,13 @@ authoritative; scripting it is fragile and was a deliberate non-goal.
 
 - **Stack baseline:** PHP **8.3** (mod_php for apache variants, php-fpm for fpm),
   Apache 2.4 / nginx 1.27, **MySQL 8.4 LTS**.
+- **PHP version is configurable** in the runnable stacks (`install/`, `prebuilt/`,
+  `fpm/`): `ARG PHP_VERSION=8.3` → `FROM php:${PHP_VERSION}-{apache,fpm}`, wired into
+  compose build args and `.env` (`PHP_VERSION=`). 8.4 is experimental but runs;
+  8.5 builds the image but Melis won't install (Laminas deps cap at 8.4) — use 8.3/8.4.
+- **Root `Makefile`** wraps the common compose ops: `make up|up-build|down|destroy|
+  logs|shell|ps STACK=install|prebuilt|fpm|app/latest`, plus `proxy-up`, `PROXY=1`,
+  and `adminer` (DB GUI on :8082). `make help` lists all.
 - **Required PHP extensions:** `pdo_mysql` + `intl` are mandatory, plus
   `mysqli, gd, zip, mbstring, xml, curl, exif, opcache`. `gd` is configured
   `--with-freetype --with-jpeg`; `intl` needs `libicu-dev`.
@@ -64,11 +71,17 @@ authoritative; scripting it is fragile and was a deliberate non-goal.
 5. **`prebuilt/`: never bind-mount a host dir over `/var/www/melis`** — it would
    mask the baked code. Use the **named volume** `melis-app` (seeded from the image
    on first run). `fpm/clear_env=no` so PHP-FPM sees `getenv(MYSQL_*)`.
-6. **PHP 7.x is incompatible** with current Melis (`require php: ^8.1|^8.3`). PHP
-   **8.4 and 8.5** work via maintained Laminas forks (see `melisplatform/melis-core#24`)
-   and ship as extra `dev-*-8.4` / `dev-*-8.5` tags (experimental), but `latest`
-   stays on **8.3** (the max version Melis officially lists) until they are listed
-   upstream.
+6. **PHP 7.x is incompatible** with current Melis (`require php: ^8.1|^8.3`). **PHP 8.4**
+   runs Melis (every dependency allows `~8.4`) and is the experimental ceiling. **PHP 8.5
+   does NOT run Melis yet** (verified 2026-06-13): the skeleton's Laminas deps
+   (laminas-mvc, -servicemanager, -mime, -math, melis-core…) cap at 8.4, so
+   `composer install` fails on 8.5 — at run time for `install/`, at *build* time for
+   `prebuilt/`/`fpm/` (they bake the skeleton). `dev-*-8.5` images build (pure PHP base,
+   forward-looking). `latest` stays on 8.3. See `melisplatform/melis-core#24`.
+7. **PHP 8.5 build gotcha: don't `docker-php-ext-install opcache`** — on 8.5 Zend
+   OPcache is built into core (no shared module), so it fails with
+   `cp: cannot stat 'modules/*'`. All Dockerfiles gate it on `version_compare(...,
+   "8.5", "<")` so opcache is installed only on < 8.5 (it's already loaded on 8.5).
 
 ## Shared local proxy (opt-in, `local-proxy/` + `*/docker-compose.proxy.yml`)
 

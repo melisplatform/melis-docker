@@ -123,12 +123,74 @@ so container names don't collide.
 - PHP-FPM: `dev-fpm-8.1`, `dev-fpm-8.2`, `dev-fpm-8.3`, `dev-fpm-8.4`, `dev-fpm-8.5`
 
 > **PHP 8.3** is the default/recommended version (officially supported by Melis 5.3.x).
-> **PHP 8.4 and 8.5** work via the maintained Laminas forks (see melisplatform/melis-core#24)
-> and ship as additional, **experimental** tags — `latest` stays on 8.3 until they are
-> officially listed upstream. The old PHP **7.x** tags are **not compatible** with current Melis.
+> **PHP 8.4** is experimental but runs Melis (every dependency allows it). **PHP 8.5**
+> base images build, but Melis does **not** run on 8.5 yet — the skeleton's Laminas
+> dependencies cap at 8.4, so its `composer install` fails on 8.5. The `dev-*-8.5` tags
+> are forward-looking (standalone PHP base) until upstream lifts the cap (see
+> melisplatform/melis-core#24). `latest` stays on 8.3. The old PHP **7.x** tags are
+> **not compatible** with current Melis.
 
 All images are multi-arch (`linux/amd64`, `linux/arm64`).
 
+## Choosing the PHP version
+
+The buildable stacks (`install/`, `prebuilt/`, `fpm/`) default to **PHP 8.3**. To
+build on another version, set `PHP_VERSION` in that stack's `.env` and rebuild:
+
+```bash
+cd install
+echo "PHP_VERSION=8.4" >> .env     # 8.3 (default, recommended) | 8.4 (experimental)
+docker compose up -d --build
+```
+
+> **8.4** is experimental but installs and runs Melis. **8.5 is not usable for Melis
+> yet**: the skeleton's Laminas dependencies cap at 8.4, so `composer install` fails on
+> 8.5 (it fails at run time for `install/`, and at *build* time for `prebuilt/`/`fpm/`
+> which bake the skeleton). Use **8.3 or 8.4** to actually run Melis. The standalone
+> `dev-*-8.5` base images do build — they're forward-looking. See melis-core#24.
+
+## Handy shortcuts (Makefile)
+
+A root [`Makefile`](Makefile) wraps the common `docker compose` calls. Pick a stack
+with `STACK=…` (default `prebuilt`):
+
+```bash
+make up STACK=install     # cp .env + start (turnkey build)
+make up-build STACK=fpm   # build + start the nginx + php-fpm stack
+make logs                 # follow logs        make shell    # shell into php
+make down                 # stop (keep data)   make destroy  # stop + wipe volumes
+make proxy-up             # shared nginx-proxy  make up PROXY=1  # run a stack behind it
+make adminer              # web DB client → http://localhost:8082
+make help                 # list everything
+```
+
+## Troubleshooting / FAQ
+
+**Port 8080 already in use** — change `HOST_PORT` in the stack's `.env`, or run
+behind the [shared proxy](#run-several-projects-at-once-shared-local-proxy) and
+drop host ports entirely.
+
+**"Test database connection" fails in the web installer** — enter the DB **host
+without a port** (e.g. `melis-db`, *not* `melis-db:3306`); a `host:port` value
+breaks Melis' flyway/JDBC URL. Credentials are whatever you set in `.env`
+(defaults `melis` / `melis` / `melis`). The DB must use collation
+`utf8mb4_general_ci` (these compose files already do).
+
+**The page won't load on first start** — the first run downloads the Melis skeleton
+(turnkey) or seeds the app volume (pre-built) before Apache/nginx answers; give it
+a minute. Follow progress with `make logs` (or `docker compose logs -f`).
+
+**Reset everything and start fresh** — `make destroy` (or `docker compose down -v`).
+For the turnkey stack also delete the host code: `rm -rf install/melis`.
+
+**Switch PHP version** — see [Choosing the PHP version](#choosing-the-php-version);
+remember to rebuild (`--build`). The pre-built image's version is fixed by its tag.
+
+**Connect a DB GUI** — the DB is published on `127.0.0.1:33061` (localhost only), or
+run `make adminer` for a browser client at http://localhost:8082.
+
+**Apache warning `AH00558: … ServerName`** — harmless; the images set
+`ServerName localhost` to silence it.
 
 ## Contributing
 

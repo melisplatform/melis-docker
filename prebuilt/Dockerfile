@@ -6,8 +6,10 @@
 # native Melis web installer on first visit.
 #
 # PHP version is configurable: default 8.3 (officially supported by Melis 5.3.x).
-# Override with --build-arg PHP_VERSION=8.4|8.5 (or PHP_VERSION in .env via compose);
-# 8.4/8.5 are experimental (maintained Laminas forks, see melis-core#24).
+# Override with --build-arg PHP_VERSION=8.4 (or PHP_VERSION in .env via compose).
+# 8.4 is experimental but runs Melis. 8.5 is NOT usable yet: the skeleton's Laminas
+# deps cap at 8.4, so the create-project step below FAILS the build on 8.5
+# (see melis-core#24).
 ARG PHP_VERSION=8.3
 FROM php:${PHP_VERSION}-apache
 

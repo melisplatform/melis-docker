@@ -3,9 +3,10 @@
 # (e.g. nginx) in front — see fpm/ for a ready-to-run nginx + php-fpm stack.
 # Build: docker build -t melisplatform/melis-docker:dev-fpm-8.5 .
 #
-# NOTE: PHP 8.5 is experimental for Melis — it satisfies the composer `^8.1`
-# constraint and builds on the maintained Laminas forks (see melis-core#24), but
-# is not yet officially listed by Melis. `latest` stays on 8.3.
+# NOTE: This is a valid PHP 8.5 base image, but **Melis does not run on 8.5 yet** —
+# the skeleton's Laminas dependencies cap at PHP 8.4, so `composer install` fails on
+# 8.5. Provided as a forward-looking / standalone PHP base until upstream lifts the
+# cap (see melis-core#24). To actually run Melis use 8.3 (default) or 8.4.
 FROM php:8.5-fpm
 
 ARG TZ=Europe/Paris
