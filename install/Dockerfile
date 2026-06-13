@@ -1,7 +1,12 @@
-# Melis Platform — turnkey install image (PHP 8.3 + Apache + Composer)
+# Melis Platform — turnkey install image (Apache + Composer)
 # Boots a fresh Melis skeleton on first run; the Melis web installer then
 # handles DB schema, admin user and the optional demo site.
-FROM php:8.3-apache
+#
+# PHP version is configurable: default 8.3 (officially supported by Melis 5.3.x).
+# Override with --build-arg PHP_VERSION=8.4|8.5 (or PHP_VERSION in .env via compose);
+# 8.4/8.5 are experimental (maintained Laminas forks, see melis-core#24).
+ARG PHP_VERSION=8.3
+FROM php:${PHP_VERSION}-apache
 
 ARG APP_NAME=melis
 ARG TZ=Europe/Paris
@@ -19,8 +24,11 @@ RUN apt-get update -y && apt-get upgrade -y \
         libjpeg-dev libfreetype6-dev libjpeg62-turbo-dev zlib1g-dev libpng-dev \
         libicu-dev tzdata \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    # opcache: built into core on PHP 8.5+ (not a shared module), so only install
+    # it on < 8.5. Detected at build time → works for any PHP_VERSION.
+    && OPCACHE=$(php -r 'echo version_compare(PHP_VERSION, "8.5", "<") ? "opcache" : "";') \
     && docker-php-ext-install -j"$(nproc)" \
-        mysqli pdo pdo_mysql xml mbstring curl zip gd intl exif opcache \
+        mysqli pdo pdo_mysql xml mbstring curl zip gd intl exif $OPCACHE \
     && ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 

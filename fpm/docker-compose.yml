@@ -13,6 +13,7 @@ services:
       args:
         APP_NAME: ${APP_NAME:-melis}
         TZ: ${TZ:-Europe/Paris}
+        PHP_VERSION: ${PHP_VERSION:-8.3}
     image: ${MELIS_FPM_IMAGE:-melisplatform/melis-docker:fpm-php8.3}
     container_name: ${MELIS_CONTAINER_NAME:-melis}-php
     depends_on:
