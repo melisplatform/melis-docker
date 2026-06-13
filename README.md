@@ -189,6 +189,11 @@ remember to rebuild (`--build`). The pre-built image's version is fixed by its t
 **Connect a DB GUI** — the DB is published on `127.0.0.1:33061` (localhost only), or
 run `make adminer` for a browser client at http://localhost:8082.
 
+**Step-debugging (Xdebug)** — the turnkey [`install/`](install/) stack can bake Xdebug
+in: set `WITH_XDEBUG=1` in `.env` and rebuild (`docker compose up -d --build`). It
+connects back to your IDE on port **9003** and starts on a trigger (browser extension
+or `XDEBUG_TRIGGER`). On Linux the compose file already maps `host.docker.internal`.
+
 **Apache warning `AH00558: … ServerName`** — harmless; the images set
 `ServerName localhost` to silence it.
 

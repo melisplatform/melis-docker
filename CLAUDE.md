@@ -41,6 +41,8 @@ authoritative; scripting it is fragile and was a deliberate non-goal.
 - **Root `Makefile`** wraps the common compose ops: `make up|up-build|down|destroy|
   logs|shell|ps STACK=install|prebuilt|fpm|app/latest`, plus `proxy-up`, `PROXY=1`,
   and `adminer` (DB GUI on :8082). `make help` lists all.
+- **Xdebug** is opt-in in `install/` via `ARG WITH_XDEBUG=1` (`.env` `WITH_XDEBUG=1`):
+  pecl xdebug + config (mode debug,develop; trigger; IDE port 9003). Off by default.
 - **Required PHP extensions:** `pdo_mysql` + `intl` are mandatory, plus
   `mysqli, gd, zip, mbstring, xml, curl, exif, opcache`. `gd` is configured
   `--with-freetype --with-jpeg`; `intl` needs `libicu-dev`.

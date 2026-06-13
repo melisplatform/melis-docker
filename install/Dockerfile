@@ -34,6 +34,22 @@ RUN apt-get update -y && apt-get upgrade -y \
     && ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
+# Optional Xdebug for step-debugging — opt-in (off by default to keep it lean).
+# Enable with --build-arg WITH_XDEBUG=1 (or WITH_XDEBUG=1 in .env via compose).
+# Defaults: connects back to your IDE on port 9003; on Linux add to the php service
+#   extra_hosts: ["host.docker.internal:host-gateway"]
+ARG WITH_XDEBUG=0
+RUN if [ "$WITH_XDEBUG" = "1" ]; then \
+        pecl install xdebug && docker-php-ext-enable xdebug \
+        && { \
+            echo "xdebug.mode=debug,develop"; \
+            echo "xdebug.start_with_request=trigger"; \
+            echo "xdebug.client_host=host.docker.internal"; \
+            echo "xdebug.client_port=9003"; \
+            echo "xdebug.discover_client_host=true"; \
+        } > /usr/local/etc/php/conf.d/zz-xdebug.ini ; \
+    fi
+
 # Composer (needed at runtime: skeleton bootstrap + the web installer adds modules)
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
