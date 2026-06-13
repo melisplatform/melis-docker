@@ -22,7 +22,7 @@ changes by building/running the relevant stack, not by unit tests.
 | [`install/`](install/) | **Turnkey build**: builds locally, `composer create-project` the skeleton at first run into `./melis` (editable on host) + MySQL. | Devs who want code locally |
 | [`fpm/`](fpm/) | Production-style **nginx + PHP-FPM + MySQL**, skeleton baked into the image. | More production-like topology |
 | [`app/latest/`](app/latest/) | **Legacy** dev path: mounts an existing Melis project (`../../../`) into a PHP-8.3-apache build. | Existing projects |
-| [`dev/`](dev/) | Per-PHP-version **base images** only (no compose). `dev-{apache,fpm}-{8.1,8.2,8.3,8.4}`. | Image building blocks |
+| [`dev/`](dev/) | Per-PHP-version **base images** only (no compose). `dev-{apache,fpm}-{8.1,8.2,8.3,8.4,8.5}`. | Image building blocks |
 | [`local-proxy/`](local-proxy/) | Shared **nginx-proxy** (opt-in) so several stacks share `:80` by hostname. | Running many projects locally |
 
 All paths finish the same way: the **native Melis web installer** at
@@ -65,9 +65,10 @@ authoritative; scripting it is fragile and was a deliberate non-goal.
    mask the baked code. Use the **named volume** `melis-app` (seeded from the image
    on first run). `fpm/clear_env=no` so PHP-FPM sees `getenv(MYSQL_*)`.
 6. **PHP 7.x is incompatible** with current Melis (`require php: ^8.1|^8.3`). PHP
-   **8.4** works via maintained Laminas forks (see `melisplatform/melis-core#24`)
-   and ships as an extra `dev-*-8.4` tag, but `latest` stays on **8.3** (the max
-   version Melis officially lists) until 8.4 is fully released upstream.
+   **8.4 and 8.5** work via maintained Laminas forks (see `melisplatform/melis-core#24`)
+   and ship as extra `dev-*-8.4` / `dev-*-8.5` tags (experimental), but `latest`
+   stays on **8.3** (the max version Melis officially lists) until they are listed
+   upstream.
 
 ## Shared local proxy (opt-in, `local-proxy/` + `*/docker-compose.proxy.yml`)
 
@@ -93,7 +94,7 @@ in the sibling `../melis-platform-website` project. Validate edits with
 
 ## CI (GitHub Actions, all multi-arch `linux/amd64,linux/arm64`)
 
-- **`docker-image.yml`** — builds `dev/` base images, matrix `{apache,fpm} × {8.1..8.4}`,
+- **`docker-image.yml`** — builds `dev/` base images, matrix `{apache,fpm} × {8.1..8.5}`,
   pushes `melisplatform/melis-docker:dev-{variant}-{php}` on `master` only.
 - **`prebuilt-image.yml`** — builds the baked images: `prebuilt/` → `latest`/`php8.3`,
   `fpm/` → `fpm-latest`/`fpm-php8.3`; pushes on `master` pushes and `v*` tags.

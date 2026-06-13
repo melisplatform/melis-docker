@@ -15,13 +15,14 @@ Source & full docs: **https://github.com/melisplatform/melis-docker**
 |-----|-----------|
 | `latest`, `php8.3` | **Pre-built** Melis (Apache + mod_php), skeleton baked in — just add a DB |
 | `fpm-latest`, `fpm-php8.3` | **Pre-built** Melis for an **nginx + PHP-FPM** stack, skeleton baked in |
-| `dev-apache-8.1` … `8.4` | Dev **base** images (PHP + Apache + Composer) to mount your own project |
-| `dev-fpm-8.1` … `8.4` | Dev **base** images (PHP-FPM + Composer) to put behind your own nginx |
+| `dev-apache-8.1` … `8.5` | Dev **base** images (PHP + Apache + Composer) to mount your own project |
+| `dev-fpm-8.1` … `8.5` | Dev **base** images (PHP-FPM + Composer) to put behind your own nginx |
 | `dev-apache-7.x` | **Legacy** (PHP 7, **not** compatible with current Melis 5.3.x — kept for old projects) |
 
 > **PHP 8.3** is the recommended/default version — `latest` points to it.
-> **PHP 8.4** dev images are available (`dev-apache-8.4`, `dev-fpm-8.4`); 8.4 support relies on
-> maintained Laminas forks and is rolling out, so `latest` stays on 8.3 for now.
+> **PHP 8.4 and 8.5** dev images are available (`dev-{apache,fpm}-8.4`, `dev-{apache,fpm}-8.5`);
+> they rely on maintained Laminas forks and are **experimental** (not yet officially listed by
+> Melis), so `latest` stays on 8.3 for now.
 
 ## Quick start
 

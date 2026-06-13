@@ -10,7 +10,7 @@ This repository contains Dockerfiles to be used for [Melis Platform](https://www
 | **Turnkey build** | Builds a fresh Melis skeleton on your host, editable code in `./melis`, + MySQL | Developers who want the code locally | [`install/`](install/) |
 | **nginx + PHP-FPM** | Production-style stack (nginx front, PHP-FPM, MySQL), skeleton baked into the image | A more production-like topology | [`fpm/`](fpm/) |
 | **Mount existing project** | Mounts an existing Melis project into a PHP-8.3-apache build | Projects you already have locally | [`app/latest/`](app/latest/) |
-| **Dev base images** | Per-PHP-version base images only (Apache or FPM, PHP 8.1–8.4) | Building your own images | [`dev/`](dev/) |
+| **Dev base images** | Per-PHP-version base images only (Apache or FPM, PHP 8.1–8.5) | Building your own images | [`dev/`](dev/) |
 
 > All paths finish the same way: the **native Melis web installer** at
 > http://localhost:8080 (`/melis/setup`) sets up the DB schema, admin user and the
@@ -119,13 +119,13 @@ so container names don't collide.
 - nginx + PHP-FPM: `fpm-latest`, `fpm-php8.3`
 
 **Dev base images** (no app, just the PHP stack) — published from [`dev/`](dev/):
-- Apache (`mod_php`): `dev-apache-8.1`, `dev-apache-8.2`, **`dev-apache-8.3`** (recommended), `dev-apache-8.4`
-- PHP-FPM: `dev-fpm-8.1`, `dev-fpm-8.2`, `dev-fpm-8.3`, `dev-fpm-8.4`
+- Apache (`mod_php`): `dev-apache-8.1`, `dev-apache-8.2`, **`dev-apache-8.3`** (recommended), `dev-apache-8.4`, `dev-apache-8.5`
+- PHP-FPM: `dev-fpm-8.1`, `dev-fpm-8.2`, `dev-fpm-8.3`, `dev-fpm-8.4`, `dev-fpm-8.5`
 
 > **PHP 8.3** is the default/recommended version (officially supported by Melis 5.3.x).
-> **PHP 8.4** works via the maintained Laminas forks (see melisplatform/melis-core#24);
-> it ships as an additional tag — `latest` stays on 8.3 until 8.4 is fully released
-> upstream. The old PHP **7.x** tags are **not compatible** with current Melis.
+> **PHP 8.4 and 8.5** work via the maintained Laminas forks (see melisplatform/melis-core#24)
+> and ship as additional, **experimental** tags — `latest` stays on 8.3 until they are
+> officially listed upstream. The old PHP **7.x** tags are **not compatible** with current Melis.
 
 All images are multi-arch (`linux/amd64`, `linux/arm64`).
 
