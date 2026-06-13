@@ -75,23 +75,39 @@ authoritative; scripting it is fragile and was a deliberate non-goal.
    on first run). `fpm/clear_env=no` so PHP-FPM sees `getenv(MYSQL_*)`.
 6. **PHP 7.x is incompatible** with current Melis (`require php: ^8.1|^8.3`). **PHP 8.4**
    runs Melis (every dependency allows `~8.4`) and is the experimental ceiling. **PHP 8.5
-   is not usable out of the box yet** — but it's NOT a hard incompatibility (diagnosed
-   end-to-end 2026-06-13). Two distinct blockers:
-   - **Composer constraints:** the skeleton's Laminas deps (laminas-mvc, -servicemanager,
-     -mime, -math, melis-core…) cap at `~8.4`, so a normal `composer install` refuses 8.5
-     — at run time for `install/`, at *build* time for `prebuilt/`/`fpm/` (they bake the
-     skeleton). Bypassable with `composer --ignore-platform-reqs`.
-   - **8.5 deprecation breaks the web installer:** with platform reqs forced, Melis runs,
-     but the installer's DB step fails. Root cause: `melis-installer`
-     `InstallHelperService.php` uses the **deprecated `PDO::MYSQL_ATTR_INIT_COMMAND`**
-     (E_DEPRECATED on 8.5), and `melis-core` (`Module.php` + `config/app.interface.php`)
-     forces `display_errors=1` and `error_reporting = E_ALL & ~E_USER_DEPRECATED` (does
-     NOT exclude core `E_DEPRECATED`). So the deprecation text is printed into the AJAX
-     reply, breaking the JSON the wizard parses — even though the DB check itself returns
-     `success:1`. **Upstream fixes:** (a) use `Pdo\Mysql::ATTR_INIT_COMMAND`; (b) exclude
-     `E_DEPRECATED` / set `display_errors=0`. Patching the constant in-container → clean
-     JSON, verified.
-   `dev-*-8.5` images build (pure PHP base, forward-looking). `latest` stays on 8.3.
+   is NOT a hard incompatibility** — Melis was driven through a full install to the
+   working back-office on 8.5 (verified end-to-end 2026-06-13), but only after several
+   fixes; out of the box it does not complete. `latest` stays on 8.3; `dev-*-8.5` images
+   build (pure PHP base, forward-looking). The complete 8.5 recipe:
+   - **(infra, shipped) git over HTTPS:** on 8.5 Composer must resolve the public
+     melisplatform Laminas forks from their **VCS source** (locked dist versions don't
+     satisfy 8.5), which are declared as `git@github.com:` (SSH) URLs — the image has no
+     ssh client/keys, so module download fails ("cannot run ssh"). Fix shipped in
+     `install/prebuilt/fpm` Dockerfiles: `git config --system url.https://github.com/.insteadOf git@github.com:`.
+     This was THE hard blocker; once fixed, all modules (cms/front/engine + demo) install.
+   - **(infra, shipped) don't display errors:** php.ini sets `display_errors=Off` +
+     `error_reporting` excluding `E_DEPRECATED` — 8.5 emits many deprecations from
+     Melis/Laminas/phing; if displayed they pollute installer AJAX (the DB-test JSON) and
+     clutter the back-office. (Melis also re-sets these at runtime from its config, incl.
+     the generated `module/MelisModuleConfig/config/app.interface.php` `local` block.)
+   - **(upstream Melis) error display is forced on:** Melis re-applies error config at
+     runtime (`melis-core` `Module.php` `ini_set`), and the value that wins the
+     `meliscore.datas.default.errors` config merge is **`melis-installer`'s**
+     `config/app.interface.php` (`display_errors=1`, `error_reporting=E_ALL & ~E_USER_DEPRECATED`
+     — does not exclude core `E_DEPRECATED`). So it overrides our php.ini `display_errors=Off`
+     for back-office pages → 8.5 deprecations are displayed. Upstream fix: set
+     `display_errors=0` / exclude `E_DEPRECATED` in melis-installer (and melis-core) config.
+   - **(upstream Melis, NOT done here) code is not 8.5-deprecation-clean:**
+     `melis-installer` uses deprecated `PDO::MYSQL_ATTR_INIT_COMMAND` (→ `Pdo\Mysql::ATTR_INIT_COMMAND`);
+     `melis-core` `MelisCoreToolService` uses `ReflectionProperty::setAccessible()`;
+     `laminas-cache` uses deprecated `SplObjectStorage::contains/attach/detach`;
+     `phing/phing` (dbdeploy) emits dozens of deprecations. All are E_DEPRECATED (noise,
+     non-fatal) — Melis runs despite them. Even latest (core 5.3.36, installer 5.3.4) are
+     not clean. Composer constraints also still cap at `~8.4` (bypassed by the wizard,
+     which already passes `--ignore-platform-reqs`).
+   - **Trap:** the wizard runs `composer update` mid-install, which **upgrades the Melis
+     packages and overwrites any vendor patch** — so the deprecation fixes must land
+     upstream, not as post-hoc vendor edits.
    See `melisplatform/melis-core#24`.
 7. **PHP 8.5 build gotcha: don't `docker-php-ext-install opcache`** — on 8.5 Zend
    OPcache is built into core (no shared module), so it fails with

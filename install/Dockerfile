@@ -53,6 +53,12 @@ RUN if [ "$WITH_XDEBUG" = "1" ]; then \
 # Composer (needed at runtime: skeleton bootstrap + the web installer adds modules)
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
+# Clone public github repos over HTTPS instead of SSH (the image has no ssh client
+# or keys). Needed when Composer resolves the public melisplatform Laminas forks
+# from their VCS source — e.g. on PHP 8.5, where the locked dist versions can't be
+# used. No-op for 8.3/8.4 (which install from dist). Public repos → no credentials.
+RUN git config --system url."https://github.com/".insteadOf "git@github.com:"
+
 # Apache: serve Melis from /public, enable rewrite
 COPY ./conf/vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY ./conf/php.ini /usr/local/etc/php/conf.d/php-melis.ini
