@@ -10,7 +10,12 @@ services:
       args:
         APP_NAME: ${APP_NAME:-melis}
         TZ: ${TZ:-Europe/Paris}
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+        WITH_XDEBUG: ${WITH_XDEBUG:-0}
     container_name: ${MELIS_CONTAINER_NAME:-melis}-php
+    # On Linux, let Xdebug reach your IDE on the host (no-op on macOS/Windows):
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy

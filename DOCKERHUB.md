@@ -15,13 +15,15 @@ Source & full docs: **https://github.com/melisplatform/melis-docker**
 |-----|-----------|
 | `latest`, `php8.3` | **Pre-built** Melis (Apache + mod_php), skeleton baked in — just add a DB |
 | `fpm-latest`, `fpm-php8.3` | **Pre-built** Melis for an **nginx + PHP-FPM** stack, skeleton baked in |
-| `dev-apache-8.1` … `8.4` | Dev **base** images (PHP + Apache + Composer) to mount your own project |
-| `dev-fpm-8.1` … `8.4` | Dev **base** images (PHP-FPM + Composer) to put behind your own nginx |
+| `dev-apache-8.1` … `8.5` | Dev **base** images (PHP + Apache + Composer) to mount your own project |
+| `dev-fpm-8.1` … `8.5` | Dev **base** images (PHP-FPM + Composer) to put behind your own nginx |
 | `dev-apache-7.x` | **Legacy** (PHP 7, **not** compatible with current Melis 5.3.x — kept for old projects) |
 
 > **PHP 8.3** is the recommended/default version — `latest` points to it.
-> **PHP 8.4** dev images are available (`dev-apache-8.4`, `dev-fpm-8.4`); 8.4 support relies on
-> maintained Laminas forks and is rolling out, so `latest` stays on 8.3 for now.
+> **PHP 8.4** is experimental but runs Melis. **PHP 8.5** dev images build, but Melis does
+> **not** run on 8.5 yet — the skeleton's Laminas dependencies cap at 8.4, so its
+> `composer install` fails on 8.5 (the `dev-*-8.5` tags are forward-looking base images).
+> `latest` stays on **8.3**. See melisplatform/melis-core#24.
 
 ## Quick start
 

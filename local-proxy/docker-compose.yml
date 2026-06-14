@@ -1,0 +1,30 @@
+# Shared local reverse-proxy for all *.local Melis projects.
+# Listens on :80 and routes by domain name (the VIRTUAL_HOST env of each
+# container). Every project joins the external "webproxy" network and declares
+# VIRTUAL_HOST — then it's reachable at http://<that-host>/ with no per-project
+# host port to remember and no :80 clash between projects.
+#
+#   docker network create webproxy                          # once, shared by all projects
+#   docker compose -f local-proxy/docker-compose.yml up -d  # start the proxy
+#
+# Then bring up any stack with its proxy override, e.g.:
+#   cd prebuilt && docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d
+#
+# Map the *.local hostnames to 127.0.0.1 in /etc/hosts (or use a wildcard
+# resolver like dnsmasq), e.g.:
+#   127.0.0.1  melis-prebuilt.local melis-install.local melis-fpm.local melis-app.local
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:1.6
+    container_name: local-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - webproxy
+
+networks:
+  webproxy:
+    external: true

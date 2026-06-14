@@ -14,6 +14,7 @@ services:
     #   args:
     #     APP_NAME: ${APP_NAME:-melis}
     #     TZ: ${TZ:-Europe/Paris}
+    #     PHP_VERSION: ${PHP_VERSION:-8.3}   # 8.3 (default) | 8.4 (experimental). 8.5 not usable yet.
     container_name: ${MELIS_CONTAINER_NAME:-melis}-php
     depends_on:
       db:

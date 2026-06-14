@@ -4,7 +4,14 @@
 # needs a database and `docker run` — no Composer/build step on their machine.
 # DB schema, admin user and the optional demo site are still set up through the
 # native Melis web installer on first visit.
-FROM php:8.3-apache
+#
+# PHP version is configurable: default 8.3 (officially supported by Melis 5.3.x).
+# Override with --build-arg PHP_VERSION=8.4 (or PHP_VERSION in .env via compose).
+# 8.4 is experimental but runs Melis. 8.5 is NOT usable yet: the skeleton's Laminas
+# deps cap at 8.4, so the create-project step below FAILS the build on 8.5
+# (see melis-core#24).
+ARG PHP_VERSION=8.3
+FROM php:${PHP_VERSION}-apache
 
 ARG APP_NAME=melis
 ARG TZ=Europe/Paris
@@ -26,13 +33,22 @@ RUN apt-get update -y && apt-get upgrade -y \
         libjpeg-dev libfreetype6-dev libjpeg62-turbo-dev zlib1g-dev libpng-dev \
         libicu-dev tzdata \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    # opcache: built into core on PHP 8.5+ (not a shared module), so only install
+    # it on < 8.5. Detected at build time → works for any PHP_VERSION.
+    && OPCACHE=$(php -r 'echo version_compare(PHP_VERSION, "8.5", "<") ? "opcache" : "";') \
     && docker-php-ext-install -j"$(nproc)" \
-        mysqli pdo pdo_mysql xml mbstring curl zip gd intl exif opcache \
+        mysqli pdo pdo_mysql xml mbstring curl zip gd intl exif $OPCACHE \
     && ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # Composer (kept at runtime too: the web installer adds modules via composer)
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+# Clone public github repos over HTTPS instead of SSH (the image has no ssh client
+# or keys). Needed when Composer resolves the public melisplatform Laminas forks
+# from their VCS source — e.g. on PHP 8.5, where the locked dist versions can't be
+# used. No-op for 8.3/8.4 (which install from dist). Public repos → no credentials.
+RUN git config --system url."https://github.com/".insteadOf "git@github.com:"
 
 # Apache: serve Melis from /public, enable rewrite
 COPY ./conf/vhost.conf /etc/apache2/sites-available/000-default.conf
